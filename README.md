@@ -1,4 +1,4 @@
-# Algo-Pivot
+# Agro-Pivot
 
 Local development guide for running the frontend and backend.
 
