@@ -132,36 +132,8 @@ export default function WeatherPage() {
             ))}
           </select>
         </div>
-        <div className="flex items-end gap-2">
-          <div>
-            <label className="block text-sm font-medium mb-1">Date</label>
-            <input
-              type="date"
-              className="border rounded px-2 py-1"
-              value={selectedDate}
-              onChange={e => setSelectedDate(e.target.value)}
-            />
-                {/* Warning for past dates */}
-                {(() => {
-                  const today = new Date();
-      {/* Error Message */}
-      {error && (
-        <div className="my-6 p-4 bg-red-100 text-red-700 rounded border border-red-300 whitespace-pre-line">
-          <strong>Error:</strong> {error}
-        </div>
-      )}
-                  const selected = new Date(selectedDate);
-                  if (selected < new Date(today.toISOString().split('T')[0])) {
-                    return (
-                      <div className="text-sm text-warning mt-2">
-                        No forecast data available for past dates.
-                      </div>
-                    );
-                  }
-                  return null;
-                })()}
-          </div>
-          <Button variant="brown" size="sm" onClick={loadWeather} className="gap-2">
+        <div className="flex items-center mb-8">
+          <Button variant="brown" size="sm" onClick={loadWeather} className="gap-2 mt-2">
             Set
           </Button>
         </div>
@@ -171,9 +143,6 @@ export default function WeatherPage() {
           <h2 className="text-2xl font-bold font-serif text-foreground mb-1">{t("weather.title")}</h2>
           <p className="text-sm text-muted-foreground">{t("weather.subtitle")} • {selectedDistrict}{selectedDistrict && selectedState ? ', ' : ''}{selectedState && selectedDistrict !== selectedState ? selectedState : ''}</p>
         </div>
-        <Button variant="outline" size="sm" onClick={loadWeather} className="gap-2">
-          <RefreshCw className="h-3.5 w-3.5" /> Refresh
-        </Button>
       </motion.div>
 
       {/* Alert Banners */}
