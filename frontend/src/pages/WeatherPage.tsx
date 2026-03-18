@@ -24,7 +24,10 @@ export default function WeatherPage() {
   // Remove 'Kedah, Kedah' and only show selected district and state
   const [locationLabel, setLocationLabel] = useState("");
   const [selectedState, setSelectedState] = useState<string>("Kedah");
-  const [selectedDistrict, setSelectedDistrict] = useState<string>("Kota Setar");
+  const [selectedDistrict, setSelectedDistrict] = useState<string>(() => {
+    const districts = getDistrictsByState("Kedah");
+    return districts[0] || "";
+  });
   const [profileLoaded, setProfileLoaded] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>(() => {
     const today = new Date();
@@ -32,15 +35,23 @@ export default function WeatherPage() {
   });
 
   const loadProfileLocation = async () => {
-    if (!user) return { district: "Kota Setar", state: "Kedah" };
+    if (!user) {
+      const state = "Kedah";
+      const districts = getDistrictsByState(state);
+      const district = districts[0] || "";
+      setSelectedState(state);
+      setSelectedDistrict(district);
+      return { district, state };
+    }
     const { data } = await supabase
       .from("profiles")
       .select("district, state")
       .eq("id", user.id)
       .single();
 
-    const district = data?.district || "Kota Setar";
     const state = data?.state || "Kedah";
+    const districts = getDistrictsByState(state);
+    const district = districts.includes(data?.district) ? data.district : districts[0] || "";
     setLocationLabel(`${district}, ${state}`);
     // Only set on first load
     if (!profileLoaded) {
@@ -134,11 +145,11 @@ export default function WeatherPage() {
             ))}
           </select>
         </div>
-        <div className="flex items-center mb-8">
-          <Button variant="brown" size="sm" onClick={loadWeather} className="gap-2 mt-2">
-            Set
-          </Button>
-        </div>
+      </div>
+      <div className="flex items-center mb-2 mt-6">
+        <Button variant="brown" size="sm" onClick={loadWeather} className="gap-2 mt-2">
+          Set
+        </Button>
       </div>
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
         <div>
