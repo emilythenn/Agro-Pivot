@@ -23,6 +23,10 @@ export default function WeatherPage() {
   const [locationLabel, setLocationLabel] = useState("Kota Setar, Kedah");
   const [selectedState, setSelectedState] = useState<string>("Kedah");
   const [selectedDistrict, setSelectedDistrict] = useState<string>("Kota Setar");
+  const [selectedDate, setSelectedDate] = useState<string>(() => {
+    const today = new Date();
+    return today.toISOString().split('T')[0];
+  });
 
   const loadProfileLocation = async () => {
     if (!user) return { district: "Kota Setar", state: "Kedah" };
@@ -50,7 +54,7 @@ export default function WeatherPage() {
       } else {
         await loadProfileLocation();
       }
-      const data = await fetchWeatherData(selectedDistrict, language);
+      const data = await fetchWeatherData(selectedState, selectedDistrict, selectedDate);
       setCurrent(data.current);
       setForecast(data.forecast || []);
       setAlerts(data.alerts || []);
@@ -62,8 +66,7 @@ export default function WeatherPage() {
   };
 
   useEffect(() => { loadWeather(); }, [language, user?.id]);
-  // Reload weather when state/district changes
-  useEffect(() => { loadWeather(); }, [language, user?.id, selectedDistrict]);
+  // Remove auto reload on state/district/date change
 
   if (loading) {
     return (
@@ -75,7 +78,7 @@ export default function WeatherPage() {
 
   return (
     <div className="max-w-[1200px] mx-auto space-y-8">
-      {/* State/District Selection */}
+      {/* State/District/Date Selection with Set button */}
       <div className="flex gap-4 items-center mb-4">
         <div>
           <label className="block text-sm font-medium mb-1">State</label>
@@ -104,6 +107,21 @@ export default function WeatherPage() {
               <option key={district} value={district}>{district}</option>
             ))}
           </select>
+        </div>
+        <div className="flex items-end gap-2">
+          <div>
+            <label className="block text-sm font-medium mb-1">Date</label>
+            <input
+              type="date"
+              className="border rounded px-2 py-1"
+              value={selectedDate}
+              onChange={e => setSelectedDate(e.target.value)}
+              min={new Date().toISOString().split('T')[0]}
+            />
+          </div>
+          <Button variant="brown" size="sm" onClick={loadWeather} className="gap-2">
+            Set
+          </Button>
         </div>
       </div>
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">

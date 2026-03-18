@@ -109,7 +109,7 @@ export async function fetchMarketData(language = "en") {
 
 // ---- Crop Advisory ----
 export async function fetchCropAdvisory(district = "Kedah", season = "current", language = "en") {
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || "https://symmetrical-guide-x5prw74947q4h5p7-4000.app.github.dev";
   const url = `${backendUrl}/api/crop-advisory`;
   const res = await fetch(url, {
     method: "POST",
