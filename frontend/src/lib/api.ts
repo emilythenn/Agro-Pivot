@@ -3,8 +3,9 @@ import { supabase } from "@/integrations/supabase/client";
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
 // ---- Weather API ----
-  // Use full backend URL if frontend and backend are on different ports
-  const backendUrl = process.env.BACKEND_URL || "http://localhost:4000";
+export async function fetchWeatherData(state = "Putrajaya", district = "237") {
+  // Use Vite env variable for backend URL
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
   const url = `${backendUrl}/weather/forecast?state=${encodeURIComponent(state)}&district=${encodeURIComponent(district)}`;
   const res = await fetch(url);
   if (!res.ok) {
@@ -20,7 +21,7 @@ const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
   } catch (e) {
     throw new Error("Weather API did not return valid JSON.");
   }
-}
+// ...existing code...
 }
 
 // ---- Market AI ----

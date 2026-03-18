@@ -36,6 +36,7 @@ app.get('/weather/warning/earthquake', async (req, res) => {
   }
 });
 
+// In VS Code Codespace, ensure port 4000 is set to Public in the Ports tab for frontend access.
 const PORT = process.env.PORT || 4000;
 app.listen(PORT, () => {
   console.log(`Weather server running on port ${PORT}`);

@@ -1,5 +1,5 @@
 // @ts-ignore: Deno runtime and remote imports are not recognized by VS Code/TypeScript
-import { serve } from "https://deno.land/std@0.168.0/http/server.js";
+import { serve } from "https://deno.land/std@0.168.0/http/server.ts";
 
 const corsHeaders = {
   "Access-Control-Allow-Origin": "*",
@@ -18,6 +18,7 @@ serve(async (req: Request) => {
 
   try {
     const { district = "Kedah", language = "en" } = await req.json();
+    // @ts-ignore: Deno global is available in Edge Functions
     // @ts-ignore: Deno global is available in Edge Functions
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");

@@ -18,6 +18,7 @@ serve(async (req) => {
 
   try {
     const { crop_name, image_base64, gps_lat, gps_lng, language = "en" } = await req.json();
+    // @ts-ignore
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -119,7 +120,9 @@ serve(async (req) => {
       // Save to database if auth token provided
       if (authHeader) {
         try {
+          // @ts-ignore
           const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+          // @ts-ignore
           const supabaseKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
           const supabase = createClient(supabaseUrl, supabaseKey);
 

@@ -17,6 +17,7 @@ serve(async (req) => {
 
   try {
     const { district = "Kedah", season = "current", language = "en" } = await req.json();
+    // @ts-ignore
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
