@@ -1,4 +1,3 @@
-
 # Agro-Pivot
 
 ## Features & Functions
@@ -116,3 +115,30 @@ npx supabase functions deploy weather-ai
 ## Optional root scripts
 
 The root `package.json` includes Bun-based shortcuts (`bun run dev`, `bun run build`) for frontend-only workflows.
+
+## Run the Backend (API server)
+
+From the repo root:
+
+```bash
+cd backend
+npm install
+node weather-server.cjs
+
+cd backend
+npm install
+npm run dev
+```
+- Starts backend server at http://localhost:4000
+- Use `.cjs` file for CommonJS modules (not `.js`)
+
+## Run the Frontend
+
+From the repo root:
+
+```bash
+cd frontend
+npm install
+npm run dev
+```
+- Starts frontend (React/Vite) at http://localhost:5173
