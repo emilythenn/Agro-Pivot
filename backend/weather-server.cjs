@@ -17,7 +17,7 @@ app.use(cors({
 app.use(express.json()); // Enable JSON body parsing for POST
 app.use('/api', require('./routes/api.cjs'));
 app.use('/api', require('./supabase/functions/market-ai/index.cjs'));
-app.use('/api', require('./supabase/functions/weather-ai/index.cjs'));
+// Removed duplicate /weather-ai endpoint to avoid conflicts. Only main /weather-ai endpoint in routes/api.cjs is active.
 app.use('/api', require('./supabase/functions/crop-advisory/index.cjs'));
 
 // Health check root endpoint
