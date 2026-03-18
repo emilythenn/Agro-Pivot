@@ -2,13 +2,25 @@ import { supabase } from "@/integrations/supabase/client";
 
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 
-// ---- Weather AI ----
-export async function fetchWeatherData(district = "Kedah", language = "en") {
-  const { data, error } = await supabase.functions.invoke("weather-ai", {
-    body: { district, language },
-  });
-  if (error) throw new Error(error.message || "Failed to fetch weather data");
-  return data;
+// ---- Weather API ----
+  // Use full backend URL if frontend and backend are on different ports
+  const backendUrl = process.env.BACKEND_URL || "http://localhost:4000";
+  const url = `${backendUrl}/weather/forecast?state=${encodeURIComponent(state)}&district=${encodeURIComponent(district)}`;
+  const res = await fetch(url);
+  if (!res.ok) {
+    let errorMsg = "Failed to fetch weather data";
+    try {
+      const text = await res.text();
+      errorMsg = text;
+    } catch {}
+    throw new Error(errorMsg);
+  }
+  try {
+    return await res.json();
+  } catch (e) {
+    throw new Error("Weather API did not return valid JSON.");
+  }
+}
 }
 
 // ---- Market AI ----

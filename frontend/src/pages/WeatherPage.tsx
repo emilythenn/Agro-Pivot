@@ -1,3 +1,4 @@
+import { supabase } from "@/integrations/supabase/client";
 import { useState, useEffect } from "react";
 import { motion } from "framer-motion";
 import { Cloud, Droplets, Thermometer, Wind, CloudRain, Sun, AlertTriangle, RefreshCw, Loader2 } from "lucide-react";
