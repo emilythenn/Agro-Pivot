@@ -25,6 +25,7 @@ export default function WeatherPage() {
   const [locationLabel, setLocationLabel] = useState("");
   const [selectedState, setSelectedState] = useState<string>("Kedah");
   const [selectedDistrict, setSelectedDistrict] = useState<string>("Kota Setar");
+  const [profileLoaded, setProfileLoaded] = useState(false);
   const [selectedDate, setSelectedDate] = useState<string>(() => {
     const today = new Date();
     return today.toISOString().split('T')[0];
@@ -41,8 +42,12 @@ export default function WeatherPage() {
     const district = data?.district || "Kota Setar";
     const state = data?.state || "Kedah";
     setLocationLabel(`${district}, ${state}`);
-    setSelectedState(state);
-    setSelectedDistrict(district);
+    // Only set on first load
+    if (!profileLoaded) {
+      setSelectedState(state);
+      setSelectedDistrict(district);
+      setProfileLoaded(true);
+    }
     return { district, state };
   };
 
@@ -51,10 +56,7 @@ export default function WeatherPage() {
     setError("");
     try {
       // Only load profile location on first load
-      if (!user) {
-        setSelectedState("Kedah");
-        setSelectedDistrict("Kota Setar");
-      } else {
+      if (user && !profileLoaded) {
         await loadProfileLocation();
       }
       const data = await fetchWeatherData(selectedState, selectedDistrict, selectedDate);
@@ -141,7 +143,7 @@ export default function WeatherPage() {
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold font-serif text-foreground mb-1">{t("weather.title")}</h2>
-          <p className="text-sm text-muted-foreground">{t("weather.subtitle")} • {selectedDistrict}{selectedDistrict && selectedState ? ', ' : ''}{selectedState && selectedDistrict !== selectedState ? selectedState : ''}</p>
+          <p className="text-sm text-muted-foreground">{t("weather.subtitle")} • {selectedDistrict}{selectedDistrict && selectedState ? ', ' : ''}{selectedState}</p>
         </div>
       </motion.div>
 
