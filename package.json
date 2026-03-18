@@ -8,5 +8,10 @@
     "build:dev": "cd frontend && bun install && bun run vite build --mode development",
     "preview": "cd frontend && bun run vite preview",
     "test": "cd frontend && bun run vitest run"
+  },
+  "dependencies": {
+    "cors": "^2.8.6",
+    "express": "^5.2.1",
+    "node-fetch": "^3.3.2"
   }
 }

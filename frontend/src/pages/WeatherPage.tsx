@@ -8,18 +8,20 @@ import { fetchWeatherData } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/contexts/AuthContext";
-import { supabase } from "@/integrations/supabase/client";
-
 const weatherIcons: Record<string, any> = { "☀️": Sun, "🌤️": Sun, "⛅": Cloud, "🌥️": Cloud, "☁️": Cloud, "🌧️": CloudRain, "⛈️": CloudRain, "🌦️": CloudRain };
 
+import { MALAYSIA_STATES, getDistrictsByState } from "@/lib/malaysiaRegions";
+
 export default function WeatherPage() {
-  const { t, language } = useSettings();
   const { user } = useAuth();
+  const { language, t } = useSettings();
   const [loading, setLoading] = useState(true);
   const [current, setCurrent] = useState<any>(null);
   const [forecast, setForecast] = useState<any[]>([]);
   const [alerts, setAlerts] = useState<any[]>([]);
   const [locationLabel, setLocationLabel] = useState("Kota Setar, Kedah");
+  const [selectedState, setSelectedState] = useState<string>("Kedah");
+  const [selectedDistrict, setSelectedDistrict] = useState<string>("Kota Setar");
 
   const loadProfileLocation = async () => {
     if (!user) return { district: "Kota Setar", state: "Kedah" };
@@ -32,14 +34,22 @@ export default function WeatherPage() {
     const district = data?.district || "Kota Setar";
     const state = data?.state || "Kedah";
     setLocationLabel(`${district}, ${state}`);
+    setSelectedState(state);
+    setSelectedDistrict(district);
     return { district, state };
   };
 
   const loadWeather = async () => {
     setLoading(true);
     try {
-      const { district } = await loadProfileLocation();
-      const data = await fetchWeatherData(district, language);
+      // Only load profile location on first load
+      if (!user) {
+        setSelectedState("Kedah");
+        setSelectedDistrict("Kota Setar");
+      } else {
+        await loadProfileLocation();
+      }
+      const data = await fetchWeatherData(selectedDistrict, language);
       setCurrent(data.current);
       setForecast(data.forecast || []);
       setAlerts(data.alerts || []);
@@ -51,6 +61,8 @@ export default function WeatherPage() {
   };
 
   useEffect(() => { loadWeather(); }, [language, user?.id]);
+  // Reload weather when state/district changes
+  useEffect(() => { loadWeather(); }, [language, user?.id, selectedDistrict]);
 
   if (loading) {
     return (
@@ -62,6 +74,37 @@ export default function WeatherPage() {
 
   return (
     <div className="max-w-[1200px] mx-auto space-y-8">
+      {/* State/District Selection */}
+      <div className="flex gap-4 items-center mb-4">
+        <div>
+          <label className="block text-sm font-medium mb-1">State</label>
+          <select
+            className="border rounded px-2 py-1"
+            value={selectedState}
+            onChange={e => {
+              setSelectedState(e.target.value);
+              const districts = getDistrictsByState(e.target.value);
+              setSelectedDistrict(districts[0] || "");
+            }}
+          >
+            {MALAYSIA_STATES.map(state => (
+              <option key={state} value={state}>{state}</option>
+            ))}
+          </select>
+        </div>
+        <div>
+          <label className="block text-sm font-medium mb-1">District</label>
+          <select
+            className="border rounded px-2 py-1"
+            value={selectedDistrict}
+            onChange={e => setSelectedDistrict(e.target.value)}
+          >
+            {getDistrictsByState(selectedState).map(district => (
+              <option key={district} value={district}>{district}</option>
+            ))}
+          </select>
+        </div>
+      </div>
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold font-serif text-foreground mb-1">{t("weather.title")}</h2>
