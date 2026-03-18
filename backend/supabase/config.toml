@@ -1,0 +1,22 @@
+project_id = "fufndhqooqthptijzpmv"
+
+[functions.agro-chat]
+verify_jwt = false
+
+[functions.weather-ai]
+verify_jwt = false
+
+[functions.market-ai]
+verify_jwt = false
+
+[functions.crop-advisory]
+verify_jwt = false
+
+[functions.scan-analyze]
+verify_jwt = false
+
+[functions.simulator-ai]
+verify_jwt = false
+
+[functions.voice-assistant]
+verify_jwt = false
