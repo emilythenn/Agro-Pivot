@@ -7,7 +7,7 @@ export async function runSimulation(params: {
   district?: string;
   language?: string;
 }) {
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || "https://symmetrical-guide-x5prw74947q4h5p7-4000.app.github.dev";
   const url = `${backendUrl}/simulator-ai`;
   const res = await fetch(url, {
     method: "POST",
@@ -36,7 +36,7 @@ export async function analyzeScan(params: {
   gps_lng?: number;
   language?: string;
 }) {
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || "https://symmetrical-guide-x5prw74947q4h5p7-4000.app.github.dev";
   const url = `${backendUrl}/scan-analyze`;
   const res = await fetch(url, {
     method: "POST",
@@ -61,7 +61,7 @@ import { supabase } from "@/integrations/supabase/client";
 
 // ---- Weather API ----
 export async function fetchWeatherData(state = "Putrajaya", district = "237") {
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
+  const backendUrl = import.meta.env.VITE_BACKEND_URL || "https://symmetrical-guide-x5prw74947q4h5p7-4000.app.github.dev";
   const url = `${backendUrl}/api/weather-ai`;
   const res = await fetch(url, {
     method: "POST",

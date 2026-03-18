@@ -7,7 +7,7 @@ const fetch = require('node-fetch').default;
 router.post('/weather-ai', async (req, res) => {
   console.log('HANDLER DEBUG fetch:', fetch);
   console.log('HANDLER DEBUG typeof fetch:', typeof fetch);
-  const { state = "Putrajaya", district = "237" } = req.body;
+  const { state = "Putrajaya", district = "237" } = req.body || {};
   try {
     const MET_TOKEN = process.env.MET_TOKEN;
     if (!MET_TOKEN) throw new Error("MET_TOKEN is not configured");
