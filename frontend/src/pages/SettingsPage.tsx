@@ -13,6 +13,7 @@ import { useSettings } from "@/contexts/SettingsContext";
 import { useAuth } from "@/contexts/AuthContext";
 import { supabase } from "@/integrations/supabase/client";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { MALAYSIA_STATES, getDistrictsByState } from "@/lib/malaysiaRegions";
 
 type Tab = "profile" | "notifications" | "display" | "regional" | "farm" | "privacy";
 
@@ -30,9 +31,11 @@ export default function SettingsPage() {
   });
 
   const [farm, setFarm] = useState({
-    farmName: "", district: "Kedah", state: "Kedah Darul Aman",
+    farmName: "", district: "Kota Setar", state: "Kedah",
     acreage: "12", primaryCrop: "Padi", secondaryCrops: "Ginger, Mung Bean", soilType: "Clay Loam",
   });
+
+  const districtOptions = getDistrictsByState(farm.state);
 
   const [notifications, setNotifications] = useState({
     weatherAlerts: true, marketUpdates: true, cropAdvisory: true, seedScanResults: true,
@@ -57,13 +60,18 @@ export default function SettingsPage() {
     if (!user) return;
     supabase.from("profiles").select("*").eq("id", user.id).single().then(({ data }) => {
       if (data) {
+        const nextState = data.state || "Kedah";
+        const nextDistrictOptions = getDistrictsByState(nextState);
+        const nextDistrict = data.district && nextDistrictOptions.includes(data.district)
+          ? data.district
+          : (nextDistrictOptions[0] || "");
         setProfile({ name: data.full_name || "", email: data.email || "", phone: data.phone || "", role: data.role || "farmer" });
         setAvatarUrl(data.avatar_url || "");
         setFarm(f => ({
           ...f,
           farmName: data.farm_name || f.farmName,
-          district: data.district || f.district,
-          state: data.state || f.state,
+          state: nextState,
+          district: nextDistrict,
           acreage: String(data.acreage || f.acreage),
           primaryCrop: data.primary_crop || f.primaryCrop,
           secondaryCrops: data.secondary_crops || f.secondaryCrops,
@@ -135,6 +143,7 @@ export default function SettingsPage() {
     await supabase.from("profiles").update({
       full_name: profile.name, email: profile.email, phone: profile.phone, role: profile.role, updated_at: new Date().toISOString(),
     }).eq("id", user.id);
+    window.dispatchEvent(new CustomEvent("profile-updated", { detail: { role: profile.role } }));
     setSaving(false);
     toast({ title: t("settings.saved"), description: t("settings.savedDesc") });
   };
@@ -147,6 +156,7 @@ export default function SettingsPage() {
       acreage: parseFloat(farm.acreage) || 0, primary_crop: farm.primaryCrop,
       secondary_crops: farm.secondaryCrops, soil_type: farm.soilType, updated_at: new Date().toISOString(),
     }).eq("id", user.id);
+    window.dispatchEvent(new CustomEvent("profile-updated", { detail: { state: farm.state, district: farm.district } }));
     setSaving(false);
     toast({ title: t("settings.saved"), description: t("settings.savedDesc") });
   };
@@ -306,7 +316,7 @@ export default function SettingsPage() {
                   <FieldInput label={t("settings.phone")} value={profile.phone} onChange={(v) => setProfile({ ...profile, phone: v })} icon={<Smartphone className="h-4 w-4" />} />
                   <FieldSelect label={t("settings.role")} value={profile.role} options={[
                     { v: "farmer", l: "Farmer" }, { v: "agronomist", l: "Agronomist" },
-                    { v: "admin", l: "Admin" }, { v: "analyst", l: "Policy Analyst" },
+                    { v: "admin", l: "Admin" }, { v: "policy_analyst", l: "Policy Analyst" },
                   ]} onChange={(v) => setProfile({ ...profile, role: v })} icon={<User className="h-4 w-4" />} />
                 </div>
                 <SaveButton label={t("settings.save")} onClick={handleSaveProfile} saving={saving} />
@@ -326,8 +336,27 @@ export default function SettingsPage() {
                 </div>
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <FieldInput label={t("settings.farmName")} value={farm.farmName} onChange={(v) => setFarm({ ...farm, farmName: v })} icon={<Wheat className="h-4 w-4" />} />
-                  <FieldInput label={t("settings.district")} value={farm.district} onChange={(v) => setFarm({ ...farm, district: v })} icon={<MapPin className="h-4 w-4" />} />
-                  <FieldInput label={t("settings.state")} value={farm.state} onChange={(v) => setFarm({ ...farm, state: v })} icon={<MapPin className="h-4 w-4" />} />
+                  <FieldSelect
+                    label={t("settings.state")}
+                    value={farm.state}
+                    options={MALAYSIA_STATES}
+                    onChange={(v) => {
+                      const nextDistricts = getDistrictsByState(v);
+                      setFarm({
+                        ...farm,
+                        state: v,
+                        district: nextDistricts.includes(farm.district) ? farm.district : (nextDistricts[0] || ""),
+                      });
+                    }}
+                    icon={<MapPin className="h-4 w-4" />}
+                  />
+                  <FieldSelect
+                    label={t("settings.district")}
+                    value={farm.district}
+                    options={districtOptions}
+                    onChange={(v) => setFarm({ ...farm, district: v })}
+                    icon={<MapPin className="h-4 w-4" />}
+                  />
                   <FieldInput label={t("settings.acreage")} value={farm.acreage} onChange={(v) => setFarm({ ...farm, acreage: v })} />
                   <FieldInput label={t("settings.primaryCrop")} value={farm.primaryCrop} onChange={(v) => setFarm({ ...farm, primaryCrop: v })} icon={<Wheat className="h-4 w-4" />} />
                   <FieldInput label={t("settings.secondaryCrops")} value={farm.secondaryCrops} onChange={(v) => setFarm({ ...farm, secondaryCrops: v })} />

@@ -6,6 +6,7 @@ import { Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
 import logoImg from "@/assets/logo.png";
 import { useAuth } from "@/contexts/AuthContext";
 import { useToast } from "@/hooks/use-toast";
+import { DEFAULT_DISTRICT, DEFAULT_STATE, MALAYSIA_STATES, getDistrictsByState } from "@/lib/malaysiaRegions";
 
 export default function Login() {
   const navigate = useNavigate();
@@ -16,8 +17,35 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [justSignedUp, setJustSignedUp] = useState(false);
   const [form, setForm] = useState({
-    name: "", email: "", password: "", state: "", district: "", role: "farmer",
+    name: "", email: "", password: "", state: DEFAULT_STATE, district: DEFAULT_DISTRICT, role: "farmer", consentAccepted: false,
   });
+
+  const districtOptions = getDistrictsByState(form.state);
+  const emailRedirectPreview = (() => {
+    const isLocalhostHost = (hostname: string) => hostname === "localhost" || hostname === "127.0.0.1";
+    const configured = import.meta.env.VITE_AUTH_REDIRECT_URL;
+    if (configured && configured.trim().length > 0) {
+      try {
+        const parsed = new URL(configured);
+        if (typeof window !== "undefined") {
+          const current = new URL(window.location.origin);
+          if (isLocalhostHost(parsed.hostname) && !isLocalhostHost(current.hostname)) {
+            return `${window.location.origin}/auth/confirm`;
+          }
+        }
+
+        if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+          return `${window.location.origin}/auth/confirm`;
+        }
+
+        return parsed.toString();
+      } catch {
+        return typeof window !== "undefined" ? `${window.location.origin}/auth/confirm` : "not available in this environment";
+      }
+    }
+
+    return typeof window !== "undefined" ? `${window.location.origin}/auth/confirm` : "not available in this environment";
+  })();
 
   useEffect(() => {
     if (user && !justSignedUp) {
@@ -33,14 +61,24 @@ export default function Login() {
     try {
       if (isSignup) {
         setJustSignedUp(true);
-        const { error } = await signUp(form.email, form.password, form.name, form.role);
+        const { error, needsEmailConfirmation } = await signUp(
+          form.email,
+          form.password,
+          form.name,
+          form.role,
+          form.state,
+          form.district,
+          form.consentAccepted,
+        );
         if (error) {
           toast({ title: "Signup failed", description: error.message, variant: "destructive" });
           setJustSignedUp(false);
         } else {
           toast({
             title: "Account created!",
-            description: "Please log in with your new account.",
+            description: needsEmailConfirmation
+              ? "Please confirm your email before logging in. We also sent a privacy and permissions notice email."
+              : "Please log in with your new account.",
           });
           setIsSignup(false);
           setJustSignedUp(false);
@@ -215,32 +253,53 @@ export default function Login() {
                       <label className="text-xs text-muted-foreground mb-1.5 block">State</label>
                       <select
                         value={form.state}
-                        onChange={(e) => setForm({ ...form, state: e.target.value })}
+                        onChange={(e) => {
+                          const nextState = e.target.value;
+                          const nextDistricts = getDistrictsByState(nextState);
+                          setForm({
+                            ...form,
+                            state: nextState,
+                            district: nextDistricts.includes(form.district) ? form.district : (nextDistricts[0] || ""),
+                          });
+                        }}
                         className="w-full bg-secondary/40 border border-border/50 rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-colors"
                       >
-                        <option value="">Select State</option>
-                        <option value="kedah">Kedah</option>
-                        <option value="perlis">Perlis</option>
-                        <option value="perak">Perak</option>
-                        <option value="penang">Penang</option>
-                        <option value="kelantan">Kelantan</option>
-                        <option value="terengganu">Terengganu</option>
-                        <option value="pahang">Pahang</option>
-                        <option value="selangor">Selangor</option>
-                        <option value="johor">Johor</option>
+                        {MALAYSIA_STATES.map((stateOption) => (
+                          <option key={stateOption} value={stateOption}>{stateOption}</option>
+                        ))}
                       </select>
                     </div>
                     <div>
                       <label className="text-xs text-muted-foreground mb-1.5 block">District</label>
-                      <input
-                        type="text"
+                      <select
                         value={form.district}
                         onChange={(e) => setForm({ ...form, district: e.target.value })}
-                        className="w-full bg-secondary/40 border border-border/50 rounded-lg px-3 py-2.5 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary/50 transition-colors"
-                        placeholder="Kubang Pasu"
-                      />
+                        className="w-full bg-secondary/40 border border-border/50 rounded-lg px-3 py-2.5 text-sm text-foreground focus:outline-none focus:ring-1 focus:ring-primary/50 transition-colors"
+                      >
+                        {districtOptions.map((districtOption) => (
+                          <option key={districtOption} value={districtOption}>{districtOption}</option>
+                        ))}
+                      </select>
                     </div>
                   </div>
+
+                  <label className="flex items-start gap-2.5 text-xs text-muted-foreground">
+                    <input
+                      type="checkbox"
+                      checked={form.consentAccepted}
+                      onChange={(e) => setForm({ ...form, consentAccepted: e.target.checked })}
+                      className="mt-0.5 h-4 w-4 rounded border-border/60"
+                      required
+                    />
+                    <span>
+                      I agree to privacy and permissions terms for collection and use of my registration data to improve AI recommendations,
+                      food security insights, and app notifications.
+                    </span>
+                  </label>
+
+                  <p className="text-[11px] text-muted-foreground break-all">
+                    Email confirmation redirect: {emailRedirectPreview}
+                  </p>
                 </>
               )}
 
