@@ -8,6 +8,10 @@ const { getForecast, getWarnings, getEarthquakeWarnings } = require('./weather-a
 const app = express();
 app.use(cors());
 
+// Health check root endpoint
+app.get('/', (req, res) => {
+  res.json({ status: 'ok', message: 'Weather API server is running.' });
+});
 app.get('/weather/forecast', async (req, res) => {
   const { state, district } = req.query;
   try {
