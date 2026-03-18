@@ -62,7 +62,7 @@ import { supabase } from "@/integrations/supabase/client";
 // ---- Weather API ----
 export async function fetchWeatherData(state = "Putrajaya", district = "237") {
   const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
-  const url = `${backendUrl}/weather-ai`;
+  const url = `${backendUrl}/api/weather-ai`;
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -86,7 +86,7 @@ export async function fetchWeatherData(state = "Putrajaya", district = "237") {
 // ---- Market AI ----
 export async function fetchMarketData(language = "en") {
   const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
-  const url = `${backendUrl}/market-ai`;
+  const url = `${backendUrl}/api/market-ai`;
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -110,7 +110,7 @@ export async function fetchMarketData(language = "en") {
 // ---- Crop Advisory ----
 export async function fetchCropAdvisory(district = "Kedah", season = "current", language = "en") {
   const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
-  const url = `${backendUrl}/crop-advisory`;
+  const url = `${backendUrl}/api/crop-advisory`;
   const res = await fetch(url, {
     method: "POST",
     headers: { "Content-Type": "application/json" },

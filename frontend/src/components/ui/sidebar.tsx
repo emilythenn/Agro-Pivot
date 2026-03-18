@@ -284,20 +284,25 @@ const SidebarInset = React.forwardRef<HTMLDivElement, React.ComponentProps<"main
 });
 SidebarInset.displayName = "SidebarInset";
 
-const SidebarInput = React.forwardRef<React.ElementRef<typeof Input>, React.ComponentProps<typeof Input>>(
+type SidebarInputProps = React.ComponentProps<typeof Input> & { className?: string };
+const SidebarInput = React.forwardRef<HTMLInputElement, SidebarInputProps>(
   ({ className, ...props }, ref) => {
     return (
-      <Input
-        ref={ref}
-        data-sidebar="input"
-        className={cn(
-          "h-8 w-full bg-background shadow-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
-          className,
-        )}
-        {...props}
-      />
+      <>
+        <label htmlFor="sidebar-input" className="sr-only">Sidebar Input</label>
+        <Input
+          id="sidebar-input"
+          ref={ref}
+          data-sidebar="input"
+          className={cn(
+            "h-8 w-full bg-background shadow-none focus-visible:ring-2 focus-visible:ring-sidebar-ring",
+            className,
+          )}
+          {...props}
+        />
+      </>
     );
-  },
+  }
 );
 SidebarInput.displayName = "SidebarInput";
 

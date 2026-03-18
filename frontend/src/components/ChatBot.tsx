@@ -240,7 +240,9 @@ export function ChatBot() {
                 onSubmit={(e) => { e.preventDefault(); send(input); }}
                 className="flex items-center gap-2"
               >
+                <label htmlFor="chatbot-input" className="sr-only">Chat Input</label>
                 <input
+                  id="chatbot-input"
                   value={input}
                   onChange={(e) => setInput(e.target.value)}
                   placeholder="Ask about crops, weather, market..."

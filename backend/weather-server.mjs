@@ -1,12 +1,16 @@
-// backend/weather-server.cjs
-// Simple Express server to expose weather API to frontend
+// backend/weather-server.mjs
+// Simple Express server to expose weather API to frontend (ESM)
 
-const express = require('express');
-const cors = require('cors');
-const dotenv = require('dotenv');
+import express from 'express';
+import cors from 'cors';
+import dotenv from 'dotenv';
 dotenv.config();
-const { getForecast, getWarnings, getEarthquakeWarnings } = require('./weather-api.cjs');
+import { getForecast, getWarnings, getEarthquakeWarnings } from './weather-api.cjs';
 
+import apiRouter from './routes/api.mjs';
+import marketAiRouter from './supabase/functions/market-ai/index.mjs';
+import weatherAiRouter from './supabase/functions/weather-ai/index.mjs';
+import cropAdvisoryRouter from './supabase/functions/crop-advisory/index.mjs';
 
 const app = express();
 app.use(cors({
@@ -15,10 +19,10 @@ app.use(cors({
   allowedHeaders: ['Content-Type', 'Authorization'],
 }));
 app.use(express.json()); // Enable JSON body parsing for POST
-app.use('/api', require('./routes/api.cjs'));
-app.use('/api', require('./supabase/functions/market-ai/index.cjs'));
-app.use('/api', require('./supabase/functions/weather-ai/index.cjs'));
-app.use('/api', require('./supabase/functions/crop-advisory/index.cjs'));
+app.use('/api', apiRouter);
+app.use('/api', marketAiRouter);
+app.use('/api', weatherAiRouter);
+app.use('/api', cropAdvisoryRouter);
 
 // Health check root endpoint
 app.get('/', (req, res) => {

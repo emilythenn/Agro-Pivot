@@ -138,7 +138,9 @@ export default function DashboardLayout() {
               <div className="h-5 w-px bg-border/50" />
               <div className="relative" ref={searchRef}>
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" strokeWidth={1.5} />
+                <label htmlFor="dashboard-search" className="sr-only">Search</label>
                 <input
+                  id="dashboard-search"
                   ref={inputRef}
                   value={search}
                   onChange={(e) => { setSearch(e.target.value); setShowSearch(true); }}
