@@ -11,12 +11,64 @@ interface AuthContextType {
     password: string,
     fullName?: string,
     role?: string,
+    state?: string,
+    district?: string,
+    consentAccepted?: boolean,
   ) => Promise<{ error: any; needsEmailConfirmation: boolean }>;
   signIn: (email: string, password: string) => Promise<{ error: any }>;
   signOut: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | null>(null);
+
+function isLocalhostHost(hostname: string): boolean {
+  return hostname === "localhost" || hostname === "127.0.0.1";
+}
+
+function getEmailRedirectUrl(): string | undefined {
+  const configured = import.meta.env.VITE_AUTH_REDIRECT_URL;
+  const hasWindowOrigin = typeof window !== "undefined" && Boolean(window.location?.origin);
+
+  if (configured && configured.trim().length > 0) {
+    try {
+      const parsed = new URL(configured);
+      // Guard against stale local config that causes confirm-email to open unreachable localhost links.
+      if (hasWindowOrigin) {
+        const current = new URL(window.location.origin);
+        const configuredIsLocal = isLocalhostHost(parsed.hostname);
+        const currentIsLocal = isLocalhostHost(current.hostname);
+        if (configuredIsLocal && !currentIsLocal) {
+          return `${window.location.origin}/auth/confirm`;
+        }
+      }
+
+      if (parsed.protocol !== "http:" && parsed.protocol !== "https:") {
+        if (hasWindowOrigin) {
+          return `${window.location.origin}/login`;
+        }
+        return undefined;
+      }
+
+      return parsed.toString();
+    } catch {
+      if (hasWindowOrigin) {
+        return `${window.location.origin}/auth/confirm`;
+      }
+      return undefined;
+    }
+  }
+
+  if (hasWindowOrigin) {
+    return `${window.location.origin}/auth/confirm`;
+  }
+
+  return undefined;
+}
+
+function isEmailNotConfirmedError(error: any): boolean {
+  const message = (error?.message || "").toLowerCase();
+  return message.includes("email not confirmed");
+}
 
 export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
@@ -85,20 +137,71 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return error;
   };
 
-  const signUp = async (email: string, password: string, fullName?: string, role?: string) => {
+  const signUp = async (
+    email: string,
+    password: string,
+    fullName?: string,
+    role?: string,
+    state?: string,
+    district?: string,
+    consentAccepted?: boolean,
+  ) => {
+    const emailRedirectTo = getEmailRedirectUrl();
+
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { full_name: fullName || "", role: role || "farmer" },
+        ...(emailRedirectTo ? { emailRedirectTo } : {}),
+        data: {
+          full_name: fullName || "",
+          role: role || "farmer",
+          state: state || "Kedah",
+          district: district || "Kota Setar",
+          consent_accepted: Boolean(consentAccepted),
+        },
       },
     });
+
+    if (!error) {
+      // Best-effort informational email; signup succeeds even if this fails.
+      await supabase.functions.invoke("signup-notice", {
+        body: {
+          email,
+          fullName: fullName || "",
+          role: role || "farmer",
+          state: state || "Kedah",
+          district: district || "Kota Setar",
+          consentAccepted: Boolean(consentAccepted),
+        },
+      }).catch(() => undefined);
+    }
+
     const needsEmailConfirmation = !data.session;
     return { error: normalizeAuthError(error), needsEmailConfirmation };
   };
 
   const signIn = async (email: string, password: string) => {
     const { error } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (isEmailNotConfirmedError(error)) {
+      // Send a fresh confirmation email with a known-good redirect URL.
+      await supabase.auth.resend({
+        type: "signup",
+        email,
+        options: {
+          ...(getEmailRedirectUrl() ? { emailRedirectTo: getEmailRedirectUrl() } : {}),
+        },
+      }).catch(() => undefined);
+
+      return {
+        error: {
+          ...(error || {}),
+          message: "Email not confirmed. We sent you a new confirmation email. Please open it and verify your account.",
+        },
+      };
+    }
+
     return { error: normalizeAuthError(error) };
   };
 

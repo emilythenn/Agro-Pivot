@@ -25,7 +25,8 @@ export function AppSidebar() {
   const { user, signOut } = useAuth();
   const [avatarUrl, setAvatarUrl] = useState<string>("");
   const [profileRole, setProfileRole] = useState<string>("farmer");
-  const [profileDistrict, setProfileDistrict] = useState<string>("Kedah");
+  const [profileState, setProfileState] = useState<string>("Kedah");
+  const [profileDistrict, setProfileDistrict] = useState<string>("Kota Setar");
 
   const roleLabels: Record<string, string> = {
     farmer: "Farmer",
@@ -42,9 +43,10 @@ export function AppSidebar() {
   // Load profile data
   useEffect(() => {
     if (!user) return;
-    supabase.from("profiles").select("avatar_url, role, district").eq("id", user.id).single().then(({ data }) => {
+    supabase.from("profiles").select("avatar_url, role, state, district").eq("id", user.id).single().then(({ data }) => {
       if (data?.avatar_url) setAvatarUrl(data.avatar_url);
       if (data?.role) setProfileRole(data.role);
+      if (data?.state) setProfileState(data.state);
       if (data?.district) setProfileDistrict(data.district);
     });
   }, [user]);
@@ -57,6 +59,18 @@ export function AppSidebar() {
     };
     window.addEventListener("avatar-updated", handler);
     return () => window.removeEventListener("avatar-updated", handler);
+  }, []);
+
+  useEffect(() => {
+    const handler = (e: Event) => {
+      const detail = (e as CustomEvent).detail as { role?: string; state?: string; district?: string } | undefined;
+      if (!detail) return;
+      if (detail.role) setProfileRole(detail.role);
+      if (detail.state) setProfileState(detail.state);
+      if (detail.district) setProfileDistrict(detail.district);
+    };
+    window.addEventListener("profile-updated", handler);
+    return () => window.removeEventListener("profile-updated", handler);
   }, []);
 
   const displayName = user?.user_metadata?.full_name || user?.email?.split("@")[0] || "Farmer";
@@ -140,17 +154,33 @@ export function AppSidebar() {
 
       <SidebarFooter className="p-3">
         {!collapsed && (
-          <div className="flex items-center gap-3 px-2 py-2 rounded-lg bg-secondary/20 mb-2">
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => navigate("/dashboard/settings")}
+            onKeyDown={(e) => {
+              if (e.key === "Enter" || e.key === " ") {
+                e.preventDefault();
+                navigate("/dashboard/settings");
+              }
+            }}
+            className="w-full flex items-center gap-3 px-2 py-2 rounded-lg bg-secondary/20 mb-2 hover:bg-secondary/30 transition-colors text-left"
+          >
             <Avatar className="h-8 w-8 flex-shrink-0 border border-border/30">
               {avatarUrl ? <AvatarImage src={avatarUrl} alt={displayName} /> : null}
               <AvatarFallback className="bg-primary/10 text-primary text-xs font-semibold">{initials}</AvatarFallback>
             </Avatar>
             <div className="overflow-hidden flex-1">
               <p className="text-xs font-medium truncate text-sidebar-primary">{displayName}</p>
-              <p className="text-[10px] text-sidebar-foreground/70 truncate">{roleLabels[profileRole] || profileRole} • {profileDistrict}</p>
+              <p className="text-[10px] text-sidebar-foreground/70 truncate">{roleLabels[profileRole] || profileRole} • {profileDistrict}, {profileState}</p>
             </div>
             <button
-              onClick={async () => { await signOut(); navigate("/"); }}
+              type="button"
+              onClick={async (e) => {
+                e.stopPropagation();
+                await signOut();
+                navigate("/");
+              }}
               className="p-1 rounded hover:bg-destructive/10 transition-colors"
             >
               <LogOut className="h-3.5 w-3.5 text-sidebar-foreground" strokeWidth={1.5} />

@@ -21,6 +21,7 @@ import PlannerPage from "./pages/PlannerPage.tsx";
 import SimulatorPage from "./pages/SimulatorPage.tsx";
 import AlertsPage from "./pages/AlertsPage.tsx";
 import SettingsPage from "./pages/SettingsPage.tsx";
+import AuthConfirm from "./pages/AuthConfirm.tsx";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const App = () => (
             <Routes>
               <Route path="/" element={<Index />} />
               <Route path="/login" element={<Login />} />
+              <Route path="/auth/confirm" element={<AuthConfirm />} />
               <Route path="/dashboard" element={<DashboardLayout />}>
                 <Route index element={<OverviewPage />} />
                 <Route path="weather" element={<WeatherPage />} />

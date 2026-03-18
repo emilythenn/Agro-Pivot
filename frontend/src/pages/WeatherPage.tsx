@@ -7,20 +7,39 @@ import { useSettings } from "@/contexts/SettingsContext";
 import { fetchWeatherData } from "@/lib/api";
 import { toast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
+import { useAuth } from "@/contexts/AuthContext";
+import { supabase } from "@/integrations/supabase/client";
 
 const weatherIcons: Record<string, any> = { "☀️": Sun, "🌤️": Sun, "⛅": Cloud, "🌥️": Cloud, "☁️": Cloud, "🌧️": CloudRain, "⛈️": CloudRain, "🌦️": CloudRain };
 
 export default function WeatherPage() {
   const { t, language } = useSettings();
+  const { user } = useAuth();
   const [loading, setLoading] = useState(true);
   const [current, setCurrent] = useState<any>(null);
   const [forecast, setForecast] = useState<any[]>([]);
   const [alerts, setAlerts] = useState<any[]>([]);
+  const [locationLabel, setLocationLabel] = useState("Kota Setar, Kedah");
+
+  const loadProfileLocation = async () => {
+    if (!user) return { district: "Kota Setar", state: "Kedah" };
+    const { data } = await supabase
+      .from("profiles")
+      .select("district, state")
+      .eq("id", user.id)
+      .single();
+
+    const district = data?.district || "Kota Setar";
+    const state = data?.state || "Kedah";
+    setLocationLabel(`${district}, ${state}`);
+    return { district, state };
+  };
 
   const loadWeather = async () => {
     setLoading(true);
     try {
-      const data = await fetchWeatherData("Kedah", language);
+      const { district } = await loadProfileLocation();
+      const data = await fetchWeatherData(district, language);
       setCurrent(data.current);
       setForecast(data.forecast || []);
       setAlerts(data.alerts || []);
@@ -31,7 +50,7 @@ export default function WeatherPage() {
     }
   };
 
-  useEffect(() => { loadWeather(); }, [language]);
+  useEffect(() => { loadWeather(); }, [language, user?.id]);
 
   if (loading) {
     return (
@@ -46,7 +65,7 @@ export default function WeatherPage() {
       <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} className="flex items-center justify-between">
         <div>
           <h2 className="text-2xl font-bold font-serif text-foreground mb-1">{t("weather.title")}</h2>
-          <p className="text-sm text-muted-foreground">{t("weather.subtitle")}</p>
+          <p className="text-sm text-muted-foreground">{t("weather.subtitle")} • {locationLabel}</p>
         </div>
         <Button variant="outline" size="sm" onClick={loadWeather} className="gap-2">
           <RefreshCw className="h-3.5 w-3.5" /> Refresh
