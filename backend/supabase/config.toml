@@ -8,6 +8,7 @@ verify_jwt = false
 
 [functions.market-ai]
 verify_jwt = false
+TWELVE_DATA_API_KEY = "f60c93c18ef64c5da68228340844a97e"
 
 [functions.crop-advisory]
 verify_jwt = false

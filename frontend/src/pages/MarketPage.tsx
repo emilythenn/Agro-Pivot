@@ -16,7 +16,9 @@ export default function MarketPage() {
   const { t, language } = useSettings();
   const [loading, setLoading] = useState(true);
   const [marketData, setMarketData] = useState<any[]>([]);
-  const [search, setSearch] = useState("");
+  const [showFilter, setShowFilter] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedCrops, setSelectedCrops] = useState<string[]>([]);
 
   const loadMarket = async () => {
     setLoading(true);
@@ -32,15 +34,26 @@ export default function MarketPage() {
 
   useEffect(() => { loadMarket(); }, [language]);
 
-  const filteredData = marketData.filter((item: any) => {
-    if (search) {
-      return item.crop.toLowerCase().includes(search.toLowerCase());
-    }
-    return true;
-  });
+  const filteredData = Array.isArray(marketData)
+    ? marketData.filter((item: any) => {
+        if (searchQuery) {
+          return item.crop && item.crop.toLowerCase().includes(searchQuery.toLowerCase());
+        }
+        if (selectedCrops.length > 0) {
+          return item.crop && selectedCrops.includes(item.crop);
+        }
+        return true;
+      })
+    : [];
 
   const clearFilters = () => {
-    setSearch("");
+    setSearchQuery("");
+    setSelectedCrops([]);
+  };
+  const toggleCropFilter = (crop: string) => {
+    setSelectedCrops((prev) =>
+      prev.includes(crop) ? prev.filter((c) => c !== crop) : [...prev, crop]
+    );
   };
 
   if (loading) {
