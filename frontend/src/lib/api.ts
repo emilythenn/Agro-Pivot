@@ -46,10 +46,11 @@ export async function fetchCropAdvisory(state = "Kedah", season = "current", lan
 }
 // ---- Market AI ----
 export async function fetchMarketData(language = "en") {
-  const url = "http://localhost:4001/api/commodity?symbol=gold";
+  const backendUrl = import.meta.env.VITE_MARKET_URL || "http://localhost:4001";
+  const url = `${backendUrl}/api/commodity`;
   const res = await fetch(url);
   if (!res.ok) {
-    let errorMsg = "Failed to fetch commodity price";
+    let errorMsg = "Failed to fetch commodity prices";
     try {
       const text = await res.text();
       errorMsg = text;

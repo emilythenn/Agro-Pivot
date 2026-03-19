@@ -19,7 +19,7 @@ const recommendations: CropRec[] = [
     climateRisk: "Low",
     marketTrend: "Rising",
     profitScore: 92,
-    advice: "Optimal conditions detected. FAMA price +12.1% this quarter. Low flood risk for next 30 days.",
+    advice: "Optimal conditions detected. Price +12.1% this quarter. Low flood risk for next 30 days.",
   },
   {
     crop: "Mung Bean",
@@ -43,7 +43,7 @@ const recommendations: CropRec[] = [
     climateRisk: "High",
     marketTrend: "Falling",
     profitScore: 23,
-    advice: "Heavy rainfall expected. FAMA price declining -3.8%. High fungal disease risk in current conditions.",
+    advice: "Heavy rainfall expected. Price declining -3.8%. High fungal disease risk in current conditions.",
   },
 ];
 

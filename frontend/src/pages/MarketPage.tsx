@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from "react";
 import { motion } from "framer-motion";
-import { BarChart3, TrendingUp, TrendingDown, Minus, RefreshCw, Loader2, Search, Filter, X } from "lucide-react";
+import { BarChart3, TrendingUp, TrendingDown, Minus, RefreshCw, Loader2, Search } from "lucide-react";
 import { GlassCard } from "@/components/GlassCard";
 import { StatusBadge } from "@/components/StatusBadge";
 import { useSettings } from "@/contexts/SettingsContext";
@@ -16,16 +16,14 @@ export default function MarketPage() {
   const { t, language } = useSettings();
   const [loading, setLoading] = useState(true);
   const [marketData, setMarketData] = useState<any[]>([]);
-  const [showFilter, setShowFilter] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedCrops, setSelectedCrops] = useState<string[]>([]);
 
   const loadMarket = async () => {
     setLoading(true);
     try {
       const data = await fetchMarketData(language);
-      // API Ninjas returns { commodity: [{ symbol, price, ... }] }
-      setMarketData(data.commodity || []);
+      // API Ninjas returns { commodities: [{ symbol, price, change, trend, ... }] }
+      setMarketData(data.commodities || []);
     } catch (e: any) {
       toast({ title: "Market load failed", description: e.message, variant: "destructive" });
     } finally {
@@ -35,27 +33,19 @@ export default function MarketPage() {
 
   useEffect(() => { loadMarket(); }, [language]);
 
-  const filteredData = Array.isArray(marketData)
-    ? marketData.filter((item: any) => {
-        if (searchQuery) {
-          return item.symbol && item.symbol.toLowerCase().includes(searchQuery.toLowerCase());
-        }
-        if (selectedCrops.length > 0) {
-          return item.symbol && selectedCrops.includes(item.symbol);
-        }
-        return true;
-      })
+  // Sort by price descending by default
+  const sortedData = Array.isArray(marketData)
+    ? [...marketData].sort((a, b) => b.price - a.price)
     : [];
 
-  const clearFilters = () => {
-    setSearchQuery("");
-    setSelectedCrops([]);
-  };
-  const toggleCropFilter = (crop: string) => {
-    setSelectedCrops((prev) =>
-      prev.includes(crop) ? prev.filter((c) => c !== crop) : [...prev, crop]
-    );
-  };
+  const filteredData = sortedData.filter((item: any) => {
+    if (searchQuery) {
+      return item.symbol && item.symbol.toLowerCase().includes(searchQuery.toLowerCase());
+    }
+    return true;
+  });
+
+  // ...existing code...
 
   if (loading) {
     return (
@@ -78,68 +68,26 @@ export default function MarketPage() {
           <p className="text-sm text-muted-foreground">{t("market.subtitle")}</p>
         </div>
         <div className="flex gap-2">
-          <Button variant="outline" size="sm" onClick={() => setShowFilter(!showFilter)} className={`gap-2 ${showFilter ? "bg-primary/10 border-primary/30" : ""}`}>
-            <Filter className="h-3.5 w-3.5" /> Filter
-          </Button>
           <Button variant="outline" size="sm" onClick={loadMarket} className="gap-2">
             <RefreshCw className="h-3.5 w-3.5" /> Refresh
           </Button>
         </div>
       </motion.div>
 
-      {/* Filter Panel */}
-      {showFilter && (
-        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }}>
-          <GlassCard className="p-5 space-y-4">
-            {/* Search */}
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <input
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search crops..."
-                className="w-full bg-secondary/20 border border-border/40 rounded-lg pl-9 pr-3 py-2.5 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary/50"
-              />
-            </div>
-
-            {/* Crop chips */}
-            <div>
-              <p className="text-xs text-muted-foreground font-medium mb-2">Select crops to view:</p>
-              <div className="flex flex-wrap gap-2">
-                {marketData.map((item) => (
-                  <button
-                    key={item.symbol}
-                    onClick={() => toggleCropFilter(item.symbol)}
-                    className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${
-                      selectedCrops.includes(item.symbol)
-                        ? "border-primary bg-primary/10 text-primary"
-                        : "border-border/30 text-muted-foreground hover:bg-secondary/30"
-                    }`}
-                  >
-                    {item.symbol}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Active filters */}
-            {(selectedCrops.length > 0 || searchQuery) && (
-              <div className="flex items-center gap-2 pt-2 border-t border-border/30">
-                <span className="text-xs text-muted-foreground">Active:</span>
-                {selectedCrops.map((crop) => (
-                  <span key={crop} className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-primary/10 text-primary text-[11px] font-medium">
-                    {crop}
-                    <button onClick={() => toggleCropFilter(crop)}><X className="h-3 w-3" /></button>
-                  </span>
-                ))}
-                <button onClick={clearFilters} className="text-[11px] text-destructive hover:underline ml-auto">
-                  Clear all
-                </button>
-              </div>
-            )}
-          </GlassCard>
-        </motion.div>
-      )}
+      {/* Search Bar */}
+      <div className="my-4">
+        <GlassCard className="p-5">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <input
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search crops..."
+              className="w-full bg-secondary/20 border border-border/40 rounded-lg pl-9 pr-3 py-2.5 text-sm placeholder:text-muted-foreground/50 focus:outline-none focus:ring-1 focus:ring-primary/50"
+            />
+          </div>
+        </GlassCard>
+      </div>
 
       {/* Top Movers */}
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
@@ -157,9 +105,7 @@ export default function MarketPage() {
       {/* Price Table */}
       <div>
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-base font-semibold text-foreground">
-            {selectedCrops.length > 0 ? `Showing ${filteredData.length} of ${marketData.length} commodities` : "All Commodities"}
-          </h3>
+          <h3 className="text-base font-semibold text-foreground">All Commodities</h3>
         </div>
         <GlassCard className="p-0 overflow-hidden">
           <div className="overflow-x-auto">
@@ -178,7 +124,7 @@ export default function MarketPage() {
                 {filteredData.length === 0 ? (
                   <tr>
                     <td colSpan={2} className="p-8 text-center text-sm text-muted-foreground">
-                      No commodities match your filter. Try selecting different commodities.
+                      No commodities match your search.
                     </td>
                   </tr>
                 ) : (
@@ -192,6 +138,11 @@ export default function MarketPage() {
                     >
                       <td className="p-4 font-semibold text-foreground">{item.symbol}</td>
                       <td className="p-4 text-right tabular-nums font-semibold text-foreground">${item.price}</td>
+                      <td className="p-4 text-right">
+                        <StatusBadge variant={trendBadge[item.trend as keyof typeof trendBadge] || "accent"}>
+                          {item.trend === 'up' ? <TrendingUp className="h-3 w-3" strokeWidth={1.5} /> : item.trend === 'down' ? <TrendingDown className="h-3 w-3" strokeWidth={1.5} /> : <Minus className="h-3 w-3" strokeWidth={1.5} />} {item.change > 0 ? '+' : ''}{item.change}
+                        </StatusBadge>
+                      </td>
                     </motion.tr>
                   ))
                 )}

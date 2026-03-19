@@ -1,17 +1,24 @@
+const FRONTEND_ORIGIN = process.env.COMMODITY_FRONTEND_ORIGIN || 'https://symmetrical-guide-x5prw74947q4h5p7-8080.app.github.dev';
+// backend/commodity-server.cjs
 const express = require('express');
 const fetch = require('node-fetch');
-const app = express();
-const PORT = 4001;
-
-// Example: API Ninjas commodity endpoint (requires free API key)
+const cors = require('cors');
 require('dotenv').config();
+
+const app = express();
+const allowedOrigins = (process.env.COMMODITY_FRONTEND_ORIGIN || 'https://symmetrical-guide-x5prw74947q4h5p7-8080.app.github.dev').split(',');
+app.use(cors({
+  origin: allowedOrigins,
+  credentials: true
+}));
+const PORT = 4001;
 const API_NINJAS_KEY = process.env.API_NINJAS_KEY || 'YOUR_API_NINJAS_KEY';
 
 app.use(express.json());
 
+// GET endpoint for real commodity price
 app.get('/api/commodity', async (req, res) => {
-    const frontendOrigin = process.env.COMMODITY_FRONTEND_ORIGIN || 'https://symmetrical-guide-x5prw74947q4h5p7-8080.app.github.dev';
-    res.setHeader('Access-Control-Allow-Origin', frontendOrigin);
+    res.setHeader('Access-Control-Allow-Origin', FRONTEND_ORIGIN);
     const cropSymbols = ['corn', 'wheat', 'coffee', 'soybean', 'rice', 'cocoa', 'cotton', 'sugar', 'gold', 'silver'];
     try {
       const results = await Promise.all(cropSymbols.map(async (symbol) => {
@@ -47,6 +54,29 @@ app.get('/api/commodity', async (req, res) => {
     }
 });
 
+// ...existing code...
+
+// POST endpoint for frontend compatibility
+app.post('/api/commodity', async (req, res) => {
+  const cropSymbols = ['corn', 'wheat', 'coffee', 'soybean', 'rice', 'cocoa', 'cotton', 'sugar', 'gold', 'silver'];
+  try {
+    const results = await Promise.all(cropSymbols.map(async (symbol) => {
+      const url = `https://api.api-ninjas.com/v1/commodityprice?symbol=${symbol}`;
+      const response = await fetch(url, {
+        headers: { 'X-Api-Key': API_NINJAS_KEY }
+      });
+      if (!response.ok) return null;
+      const data = await response.json();
+      const item = Array.isArray(data) ? data[0] : data;
+      return item ? { symbol: item.symbol, price: item.price, unit: item.unit, change: item.change || 0, trend: item.change > 0 ? 'up' : item.change < 0 ? 'down' : 'stable' } : null;
+    }));
+    const commodities = results.filter(Boolean);
+    res.json({ commodities });
+  } catch (e) {
+    res.status(500).json({ error: e.message });
+  }
+});
+
 app.listen(PORT, () => {
-  console.log(`Commodity backend running on ${PORT}`);
+  console.log(`Commodity backend running on http://localhost:${PORT}`);
 });
