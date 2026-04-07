@@ -1,0 +1,1 @@
+DELETE FROM alerts WHERE created_at < NOW() - INTERVAL '24 hours';

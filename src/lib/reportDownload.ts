@@ -1,0 +1,127 @@
+// Report download utilities for Evidence Reports
+
+function parseAnalysis(raw: string | object | null): any {
+  if (!raw) return {};
+  if (typeof raw === "object") return raw;
+  try { return JSON.parse(raw); } catch { return { summary: raw }; }
+}
+
+export function downloadCSV(report: any) {
+  const analysis = parseAnalysis(report.ai_analysis);
+  const rows = [
+    ["Field", "Value"],
+    ["Report ID", report.id],
+    ["Title", report.report_title],
+    ["Type", report.report_type || "N/A"],
+    ["Date", new Date(report.created_at).toLocaleDateString()],
+    ["GPS Lat", report.gps_data?.lat || "N/A"],
+    ["GPS Lng", report.gps_data?.lng || "N/A"],
+    ["Germination Rate", analysis.germination_rate ?? "N/A"],
+    ["Confidence", analysis.confidence ?? "N/A"],
+    ["Status", analysis.status || "N/A"],
+    ["Summary", analysis.summary || "N/A"],
+    ["Hash", report.report_hash || "N/A"],
+  ];
+
+  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g, '""')}"`).join(",")).join("\n");
+  const blob = new Blob([csv], { type: "text/csv" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${report.report_title.replace(/\s+/g, "_")}.csv`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+export async function downloadPDF(report: any) {
+  const analysis = parseAnalysis(report.ai_analysis);
+  const scanData = report.scan_results;
+  const scanAnalysis = scanData ? parseAnalysis(scanData.ai_analysis) : {};
+  const merged = { ...scanAnalysis, ...analysis };
+  if (merged.germination_rate === undefined && scanData?.germination_rate !== undefined) merged.germination_rate = scanData.germination_rate;
+  if (merged.confidence === undefined && scanAnalysis.confidence !== undefined) merged.confidence = scanAnalysis.confidence;
+  if (!merged.summary && scanAnalysis.summary) merged.summary = scanAnalysis.summary;
+  if (!merged.status && scanAnalysis.status) merged.status = scanAnalysis.status;
+  if (!merged.issues?.length && scanAnalysis.issues?.length) merged.issues = scanAnalysis.issues;
+  if (!merged.recommendations?.length && scanAnalysis.recommendations?.length) merged.recommendations = scanAnalysis.recommendations;
+  
+  const imageUrl = scanData?.image_url;
+  
+  const html = `
+    <html><head><title>${report.report_title}</title>
+    <style>
+      body { font-family: Georgia, serif; padding: 40px; color: #1a1a1a; }
+      h1 { font-size: 22px; border-bottom: 2px solid #333; padding-bottom: 10px; }
+      .meta { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; margin: 20px 0; font-size: 13px; }
+      .label { color: #888; font-size: 11px; text-transform: uppercase; }
+      .section { margin: 20px 0; }
+      .section h2 { font-size: 15px; border-bottom: 1px solid #ddd; padding-bottom: 6px; }
+      .scan-img { max-width: 300px; border: 1px solid #ddd; border-radius: 4px; margin: 12px 0; }
+      .issue { padding: 8px 12px; border-left: 3px solid #c0392b; background: #fdf2f2; margin-bottom: 8px; font-size: 13px; }
+      .rec { padding: 6px 0; border-bottom: 1px dotted #ddd; font-size: 13px; }
+    </style></head><body>
+    <h1>Agro-Pivot — ${report.report_title}</h1>
+    <div class="meta">
+      <div><span class="label">Report ID</span><br/>${report.id.slice(0, 12).toUpperCase()}</div>
+      <div><span class="label">Date</span><br/>${new Date(report.created_at).toLocaleDateString("en-MY", { dateStyle: "long" })}</div>
+      <div><span class="label">Type</span><br/>${report.report_type || "N/A"}</div>
+      <div><span class="label">Status</span><br/>${merged.status || "completed"}</div>
+      <div><span class="label">Crop</span><br/>${scanData?.crop_name || "N/A"}</div>
+      <div><span class="label">Germination Rate</span><br/>${merged.germination_rate !== undefined ? merged.germination_rate + "%" : "N/A"}</div>
+      <div><span class="label">Confidence</span><br/>${merged.confidence !== undefined ? merged.confidence + "%" : "N/A"}</div>
+      <div><span class="label">GPS</span><br/>${report.gps_data?.lat ? Number(report.gps_data.lat).toFixed(4) + "° N, " + Number(report.gps_data.lng).toFixed(4) + "° E" : "N/A"}</div>
+    </div>
+    ${imageUrl ? `<div class="section"><h2>Photographic Evidence</h2><img class="scan-img" src="${imageUrl}" alt="Scan"/></div>` : ""}
+    ${merged.summary ? `<div class="section"><h2>Summary</h2><p>${merged.summary}</p></div>` : ""}
+    ${merged.issues?.length ? `<div class="section"><h2>Findings</h2>${merged.issues.map((i: any) => `<div class="issue"><strong>${i.type}</strong>: ${i.description}</div>`).join("")}</div>` : ""}
+    ${merged.recommendations?.length ? `<div class="section"><h2>Recommendations</h2>${merged.recommendations.map((r: string, i: number) => `<div class="rec">${i + 1}. ${r}</div>`).join("")}</div>` : ""}
+    <div style="margin-top:40px;border-top:2px solid #333;padding-top:20px;font-size:11px;color:#888;text-align:center;">
+      Generated by Agro-Pivot Agricultural Intelligence Platform<br/>Hash: ${report.report_hash || "N/A"}
+    </div>
+    </body></html>
+  `;
+
+  const win = window.open("", "_blank");
+  if (!win) throw new Error("Popup blocked");
+  win.document.write(html);
+  win.document.close();
+  win.print();
+}
+
+export async function downloadDOCX(report: any) {
+  const analysis = parseAnalysis(report.ai_analysis);
+  const scanData = report.scan_results;
+  const scanAnalysis = scanData ? parseAnalysis(scanData.ai_analysis) : {};
+  const merged = { ...scanAnalysis, ...analysis };
+  if (merged.germination_rate === undefined && scanData?.germination_rate !== undefined) merged.germination_rate = scanData.germination_rate;
+  if (!merged.summary && scanAnalysis.summary) merged.summary = scanAnalysis.summary;
+  if (!merged.issues?.length && scanAnalysis.issues?.length) merged.issues = scanAnalysis.issues;
+  if (!merged.recommendations?.length && scanAnalysis.recommendations?.length) merged.recommendations = scanAnalysis.recommendations;
+  
+  const imageUrl = scanData?.image_url;
+  
+  const html = `<html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word">
+    <head><meta charset="utf-8"><title>${report.report_title}</title></head>
+    <body style="font-family:Georgia,serif;padding:40px;">
+    <h1>${report.report_title}</h1>
+    <p>Report ID: ${report.id.slice(0, 12).toUpperCase()}</p>
+    <p>Date: ${new Date(report.created_at).toLocaleDateString("en-MY", { dateStyle: "long" })}</p>
+    <p>Type: ${report.report_type || "N/A"}</p>
+    <p>Crop: ${scanData?.crop_name || "N/A"}</p>
+    <p>Germination Rate: ${merged.germination_rate !== undefined ? merged.germination_rate + "%" : "N/A"}</p>
+    <p>GPS: ${report.gps_data?.lat ? Number(report.gps_data.lat).toFixed(4) + "° N, " + Number(report.gps_data.lng).toFixed(4) + "° E" : "N/A"}</p>
+    ${imageUrl ? `<h2>Photographic Evidence</h2><img src="${imageUrl}" alt="Scan" style="max-width:300px;border:1px solid #ddd;"/>` : ""}
+    ${merged.summary ? `<h2>Summary</h2><p>${merged.summary}</p>` : ""}
+    ${merged.issues?.length ? `<h2>Findings</h2>${merged.issues.map((i: any) => `<p style="border-left:3px solid #c00;padding-left:8px;"><strong>${i.type}</strong>: ${i.description}</p>`).join("")}` : ""}
+    ${merged.recommendations?.length ? `<h2>Recommendations</h2>${merged.recommendations.map((r: string, i: number) => `<p>${i + 1}. ${r}</p>`).join("")}` : ""}
+    <hr/><p style="font-size:11px;color:#888;">Generated by Agro-Pivot • Hash: ${report.report_hash || "N/A"}</p>
+    </body></html>`;
+
+  const blob = new Blob([html], { type: "application/msword" });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `${report.report_title.replace(/\s+/g, "_")}.doc`;
+  a.click();
+  URL.revokeObjectURL(url);
+}

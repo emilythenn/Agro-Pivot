@@ -1,0 +1,16 @@
+project_id = "dodfsgxbpseuwmbyxmyl"
+
+[functions.weather-forecast]
+verify_jwt = false
+
+[functions.scan-analyze]
+verify_jwt = false
+
+[functions.crop-advisory]
+verify_jwt = false
+
+[functions.simulate]
+verify_jwt = false
+
+[functions.chat-assistant]
+verify_jwt = false

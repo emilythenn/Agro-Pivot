@@ -1,0 +1,22 @@
+
+ALTER TABLE public.profiles
+  ADD COLUMN IF NOT EXISTS farm_type text DEFAULT 'paddy',
+  ADD COLUMN IF NOT EXISTS irrigation_type text DEFAULT 'unknown',
+  ADD COLUMN IF NOT EXISTS gps_lat numeric,
+  ADD COLUMN IF NOT EXISTS gps_lng numeric,
+  ADD COLUMN IF NOT EXISTS current_crops text,
+  ADD COLUMN IF NOT EXISTS preferred_crops text,
+  ADD COLUMN IF NOT EXISTS planting_season text DEFAULT 'main_season',
+  ADD COLUMN IF NOT EXISTS farming_style text DEFAULT 'traditional',
+  ADD COLUMN IF NOT EXISTS risk_tolerance text DEFAULT 'medium',
+  ADD COLUMN IF NOT EXISTS soil_ph numeric,
+  ADD COLUMN IF NOT EXISTS drainage_condition text DEFAULT 'unknown',
+  ADD COLUMN IF NOT EXISTS flood_risk text DEFAULT 'unknown',
+  ADD COLUMN IF NOT EXISTS historical_issues text,
+  ADD COLUMN IF NOT EXISTS budget_per_season numeric,
+  ADD COLUMN IF NOT EXISTS expected_yield_target text,
+  ADD COLUMN IF NOT EXISTS selling_method text DEFAULT 'unknown',
+  ADD COLUMN IF NOT EXISTS main_crop_income boolean DEFAULT true,
+  ADD COLUMN IF NOT EXISTS onboarding_completed boolean DEFAULT false,
+  ADD COLUMN IF NOT EXISTS notification_email boolean DEFAULT true,
+  ADD COLUMN IF NOT EXISTS notification_sms boolean DEFAULT false;
