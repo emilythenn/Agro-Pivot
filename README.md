@@ -1,12 +1,16 @@
 # 🌾 AgroPivot — Smart Agriculture Advisory Platform
 
+---
+
 ## 📌 Project Overview
 
-AgroPivot is a full-stack smart agriculture platform designed to support Malaysian farmers, seed sellers, and consumers through data-driven decision-making.
+AgroPivot is a smart agriculture platform designed to empower Malaysian farmers with data-driven insights for better crop planning, risk management, and decision-making.
 
-The system integrates real-time environmental data, AI-powered advisory tools, and a peer-to-peer marketplace into a unified, role-based dashboard. It enables farmers to optimize crop planning, monitor risks, and improve yield outcomes, while also connecting stakeholders across the agricultural supply chain.
+The system combines real-time environmental data, AI-powered advisory tools, and farm-specific analytics into a unified, role-based dashboard. By integrating weather insights, market intelligence, and crop analysis, AgroPivot helps farmers make informed decisions throughout the planting cycle.
 
-The platform is built with a modern web architecture, combining a responsive frontend with cloud-based backend services and AI capabilities.
+In addition to its core advisory system, the platform includes an extended marketplace feature to support interactions between farmers, seed sellers, and consumers.
+
+🚀 **Live Application:** https://agro-pivot.lovable.app
 
 ---
 
@@ -18,7 +22,7 @@ The platform is built with a modern web architecture, combining a responsive fro
 
 ### Steps
 
-```bash
+```bash id="o4v2zz"
 # 1. Clone repository
 git clone <your-repo-link>
 cd agropivot
@@ -34,58 +38,11 @@ npm run dev
 
 ---
 
-### ⚠️ Important Note on Local Development
+### ⚠️ Local Development Notes
 
-This project uses managed cloud services for backend infrastructure and AI processing.
+The application follows a cloud-integrated architecture.
 
-While the frontend can be executed locally, full functionality requires access to deployed cloud services, including:
-
-* Database and authentication services
-* Serverless backend functions
-* AI processing endpoints
-
-Without these services, features such as AI advisory, scanning, and real-time data integration will not function as expected.
-
----
-
-## 🧱 System Architecture
-
-AgroPivot follows a modular full-stack architecture:
-
-### Frontend
-
-* Built with React and TypeScript
-* Responsive UI with modern component design
-* Role-based dashboards and routing
-
-### Backend (Cloud-Based)
-
-The application integrates a Backend-as-a-Service (BaaS) platform to handle:
-
-* Database management (PostgreSQL)
-* Authentication and user sessions
-* Role-based access control
-* Secure API layer
-
-### Serverless Functions
-
-Core backend logic is implemented through serverless functions, including:
-
-* Weather data processing
-* Market price aggregation
-* AI-powered crop analysis
-* Image-based disease detection
-
-### AI Integration
-
-AI capabilities are integrated via managed AI endpoints, enabling:
-
-* Crop advisory recommendations
-* Market trend insights
-* Image-based crop health analysis
-* Conversational assistant support
-
-This architecture allows rapid development while maintaining scalability and reliability.
+While the frontend can be run locally, key functionalities depend on deployed backend services and AI endpoints. Features such as crop advisory, image analysis, and real-time insights require access to the live environment.
 
 ---
 
@@ -110,7 +67,7 @@ This architecture allows rapid development while maintaining scalability and rel
 
 ### Backend & Database
 
-* Cloud-based PostgreSQL (via BaaS)
+* PostgreSQL (cloud-hosted)
 * Row-Level Security (RLS)
 
 ### Authentication
@@ -119,7 +76,7 @@ This architecture allows rapid development while maintaining scalability and rel
 
 ### AI / Machine Learning
 
-* Managed AI APIs (LLM-based inference for advisory & analysis)
+* AI-powered inference for advisory, analysis, and chatbot features
 
 ### Additional Tools
 
@@ -129,67 +86,58 @@ This architecture allows rapid development while maintaining scalability and rel
 
 ---
 
-## 🚀 Features
+## ☁️ Cloud & AI Integration
 
-### 🔐 Authentication & Role Management
+AgroPivot integrates **Lovable** to support specific infrastructure and AI-related functionalities within the system.
 
-* Multi-role system: Farmer, Seed Seller, Consumer
-* Secure login, signup, and verification
-* Role-based dashboards and permissions
+This includes:
 
----
+* Backend services such as database hosting, authentication, and secure data access
+* Serverless functions for weather data processing, market data handling, and AI workflows
+* AI capabilities powering crop advisory, image-based analysis, and chatbot interactions
+* Deployment and hosting of the live application
 
-### 🧑‍🌾 Farmer Onboarding
-
-* Multi-step onboarding capturing farm details
-* Persistent farm profile used across AI features
+These integrations enable seamless connectivity between the frontend, backend logic, and intelligent features.
 
 ---
 
-### 📊 Dashboard Overview
+## 🚀 Core Features 
 
-* Real-time summaries of farm activity
-* Weather insights and alerts
-* Market price previews
-* Quick action panels
+### 🌱 AI Crop Advisory System
 
----
-
-### 🌦️ Weather Forecast
-
-* District-level 7-day forecasts
-* AI-generated agricultural advice
-* Fallback handling during API downtime
+* Personalized planting recommendations based on farm profile
+* Crop suitability analysis and seasonal insights
+* Risk assessment with mitigation strategies
 
 ---
 
-### 📈 Market Intelligence
+### 🌦️ Weather Intelligence
+
+* District-level forecasts across Malaysia
+* 7-day predictions (rainfall, humidity, temperature, wind)
+* AI-enhanced agricultural recommendations
+
+---
+
+### 📈 Market Decision Support
 
 * Real-time crop price tracking
 * Trend analysis and comparisons
-* AI-powered recommendations
-
----
-
-### 🌱 AI Crop Advisory
-
-* Personalized planting suggestions
-* Risk analysis and mitigation strategies
-* Context-aware recommendations
+* AI-assisted insights for selling decisions
 
 ---
 
 ### 📷 Crop Health Scanner
 
 * Image-based disease detection
-* AI-generated analysis and confidence scoring
-* Scan history and tracking
+* AI-generated analysis with confidence scoring
+* Historical scan tracking
 
 ---
 
 ### 📋 Crop Planner & Simulator
 
-* Seasonal planning tools
+* Seasonal planting calendar
 * Crop rotation suggestions
 * Scenario-based simulation (risk vs reward)
 
@@ -198,45 +146,46 @@ This architecture allows rapid development while maintaining scalability and rel
 ### 🌾 Active Crop Management
 
 * Track crop growth stages
-* Budget and cost monitoring
+* Monitor costs and budget allocation
 * Plot-level management
 
 ---
 
-### 📄 Evidence Reports
+### 📊 Farmer Dashboard
 
-* Generate structured agricultural reports
-* Includes GPS, AI insights, and environmental data
-* Integrity verification via hashing
+* Centralized overview of farm activity
+* Alerts, insights, and recent actions
+* Quick access to key tools
+
+---
+
+## ➕ Supporting Features
+
+### 🛒 Marketplace 
+
+* Product listings with search and filtering
+* Seller profiles and verification indicators
+* Order tracking system
+
+---
+
+### 🔐 Authentication & Role Management
+
+* Multi-role system (Farmer, Seed Seller, Consumer)
+* Secure login and role-based access
 
 ---
 
 ### 🔔 Alerts System
 
-* AI-triggered alerts (weather, crop health, market)
-* Severity levels and notifications
-
----
-
-### 🛒 Marketplace
-
-* Product listings with filters and search
-* Seller profiles and verification system
-* Order lifecycle tracking
-
----
-
-### ⭐ Rating & Review System
-
-* Verified purchase reviews
-* Seller rating aggregation
+* Notifications for weather, crop health, and market changes
+* Severity-based alert levels
 
 ---
 
 ### 🤖 AI Chat Assistant
 
-* Context-aware agricultural chatbot
-* Real-time Q&A support
+* Context-aware chatbot for agricultural support
 
 ---
 
@@ -254,70 +203,53 @@ This architecture allows rapid development while maintaining scalability and rel
 ### 🎨 UI/UX Design
 
 * Responsive layout (mobile + desktop)
-* Clean agricultural-themed design system
+* Clean agricultural-themed interface
 * Smooth animations and transitions
 
 ---
 
 ## 🛣️ Future Roadmap
 
-### 🔐 Security Enhancements
+### 🌱 Advanced Farmer Intelligence
 
-* Advanced access control policies
-* API rate limiting
-* Security audits
+* Predictive yield modeling
+* AI-driven disease forecasting
+* Hyper-localized recommendations
+
+---
+
+### 🌐 IoT Integration
+
+* Soil and environmental sensors
+* Real-time farm monitoring
+* Automated alerts and recommendations
+
+---
+
+### 📊 Data & Analytics
+
+* Historical performance tracking
+* Farm profitability insights
+* Decision dashboards
 
 ---
 
 ### 🛒 Marketplace Expansion
 
-* In-app messaging
-* Negotiation system
-* Integrated payments (FPX, e-wallets)
-* Delivery tracking
-
----
-
-### 🌱 IoT Integration
-
-* Soil sensors and real-time monitoring
-* Automated irrigation alerts
-* Smart farming dashboards
-
----
-
-### 🤝 Community Features
-
-* Farmer discussion forums
-* Knowledge sharing hub
-* Mentorship matching
-
----
-
-### 📊 Advanced Analytics
-
-* Yield tracking and predictions
-* Financial dashboards
-* Performance reports
-
----
-
-### 📱 Mobile Application
-
-* Progressive Web App (PWA) / React Native app
-* Offline capabilities
-* Push notifications
-* Camera-native scanning
+* Messaging and negotiation features
+* Integrated payments
+* Logistics and delivery tracking
 
 ---
 
 ## 🚀 Deployment
 
-The application is deployed on a cloud hosting platform with integrated backend and AI services, ensuring seamless scalability and real-time performance.
+The application is deployed and accessible online via a managed hosting environment:
+
+🔗 https://agro-pivot.lovable.app
 
 ---
 
 ## 📄 License
 
 Proprietary — All rights reserved.
-
